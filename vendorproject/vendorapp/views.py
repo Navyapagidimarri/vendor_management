@@ -40,8 +40,6 @@ def update_vendor(request, id):
         ven.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-
 @api_view(['POST', 'GET'])
 def create_purchase_order(request):
     if request.method == 'POST':
@@ -83,12 +81,15 @@ def purchase_order_detail(request, po_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def get_vendor_performance(request, vendor_id):
-    try:
-        vendor = vendor_profile.objects.get(pk=vendor_id)
-    except Vendor.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    serializer = vendorSerializer(vendor)
-    return Response(serializer.data)
+    if request.method=="GET":
+     serializer = vendorSerializer(vendor)
+     return Response(serializer.data) 
+    elif request.method == 'POST':
+        vendor.on_time_delivery_rate = request.data.get('on_time_delivery_rate', vendor.on_time_delivery_rate)
+        vendor.quality_rating = request.data.get('quality_rating', vendor.quality_rating)
+        vendor.response_time = request.data.get('response_time', vendor.response_time)
+        vendor.fulfillment_rate = request.data.get('fulfillment_rate', vendor.fulfillment_rate)
+        vendor.save()
+        return Response({'message': 'Vendor performance updated successfully'}, status=status.HTTP_201_CREATED)
